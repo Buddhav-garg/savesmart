@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
@@ -227,7 +228,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () => context.go('/home/goal/${goal.id}/auto-save'),
             icon: const Icon(Icons.autorenew),
             label: const Text('Set up auto-save'),
           ),

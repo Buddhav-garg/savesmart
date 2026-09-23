@@ -5,6 +5,7 @@ import '../features/deposits/presentation/deposits_screen.dart';
 import '../features/goals/presentation/goal_detail_screen.dart';
 import '../features/goals/presentation/goals_screen.dart';
 import '../features/goals/presentation/new_goal_screen.dart';
+import '../features/goals/presentation/auto_save_screen.dart';
 import '../features/deposits/presentation/fd_calculator_screen.dart';
 import '../features/deposits/presentation/rd_screen.dart';
 
@@ -24,6 +25,13 @@ final appRouter = GoRouter(
           path: 'goal/:id',
           builder: (context, state) =>
               GoalDetailScreen(goalId: state.pathParameters['id']!),
+          routes: [
+            GoRoute(
+              path: 'auto-save',
+              builder: (context, state) =>
+                  AutoSaveScreen(goalId: state.pathParameters['id']!),
+            ),
+          ],
         ),
       ],
     ),
