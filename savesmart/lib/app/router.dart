@@ -8,6 +8,7 @@ import '../features/goals/presentation/new_goal_screen.dart';
 import '../features/goals/presentation/auto_save_screen.dart';
 import '../features/deposits/presentation/fd_calculator_screen.dart';
 import '../features/deposits/presentation/rd_screen.dart';
+import '../features/deposits/presentation/deposit_booking_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/login',
@@ -44,5 +45,13 @@ final appRouter = GoRouter(
       builder: (context, state) => const FdCalculatorScreen(),
     ),
     GoRoute(path: '/rd', builder: (context, state) => const RdScreen()),
+    GoRoute(
+      path: '/book-fd',
+      builder: (context, state) => const DepositBookingScreen(kind: 'FD'),
+    ),
+    GoRoute(
+      path: '/book-rd',
+      builder: (context, state) => const DepositBookingScreen(kind: 'RD'),
+    ),
   ],
 );

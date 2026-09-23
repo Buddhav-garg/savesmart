@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/money.dart';
@@ -250,6 +251,16 @@ class _FdCalculatorScreenState extends State<FdCalculatorScreen> {
                 ),
               ),
             ),
+          if (!loadingRate && errorMessage == null) ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 52,
+              child: FilledButton(
+                onPressed: () => context.go('/book-fd'),
+                child: const Text('Book this FD'),
+              ),
+            ),
+          ],
         ],
       ),
     );

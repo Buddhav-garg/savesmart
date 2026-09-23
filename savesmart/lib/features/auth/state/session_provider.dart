@@ -100,6 +100,37 @@ class AppSession extends ChangeNotifier {
     return updated;
   }
 
+  Future<Deposit> bookDeposit({
+    required String kind,
+    required int tenureDays,
+    int? principalPaise,
+    int? installmentPaise,
+    int? debitDate,
+    String payout = 'on_maturity',
+    String renewal = 'none',
+    String? nomineeName,
+    String? nomineeRelation,
+    int? nomineeSharePct,
+    required String idempotencyKey,
+  }) async {
+    final deposit = await _depositRepository.book(
+      kind: kind,
+      tenureDays: tenureDays,
+      principalPaise: principalPaise,
+      installmentPaise: installmentPaise,
+      debitDate: debitDate,
+      payout: payout,
+      renewal: renewal,
+      nomineeName: nomineeName,
+      nomineeRelation: nomineeRelation,
+      nomineeSharePct: nomineeSharePct,
+      idempotencyKey: idempotencyKey,
+    );
+    _deposits.add(_toMockDeposit(deposit));
+    notifyListeners();
+    return deposit;
+  }
+
   Future<List<AutoSaveRule>> createAutoSaveRule({
     required String goalId,
     required String type,
