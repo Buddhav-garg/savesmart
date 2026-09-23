@@ -6,6 +6,7 @@ import '../data/auth_repository.dart';
 import '../domain/session.dart';
 import '../../deposits/data/deposit_repository.dart';
 import '../../deposits/domain/deposit.dart';
+import '../../deposits/domain/withdrawal_quote.dart';
 import '../../goals/data/goal_repository.dart';
 import '../../goals/data/auto_save_repository.dart';
 import '../../goals/domain/auto_save_rule.dart';
@@ -25,6 +26,7 @@ class AppSession extends ChangeNotifier {
 
   final List<MockGoal> _goals;
   final List<MockDeposit> _deposits;
+  final List<Deposit> _portfolioDeposits = [];
   final Map<String, List<AutoSaveRule>> _rulesByGoal = {};
   final ApiClient _client;
   late final AuthRepository _authRepository;
@@ -36,6 +38,7 @@ class AppSession extends ChangeNotifier {
 
   List<MockGoal> get goals => List.unmodifiable(_goals);
   List<MockDeposit> get deposits => List.unmodifiable(_deposits);
+  List<Deposit> get portfolioDeposits => List.unmodifiable(_portfolioDeposits);
   List<AutoSaveRule> rulesForGoal(String goalId) =>
       List.unmodifiable(_rulesByGoal[goalId] ?? const []);
   UserProfile? get user => _userSession?.user;
@@ -57,6 +60,9 @@ class AppSession extends ChangeNotifier {
       _deposits
         ..clear()
         ..addAll(apiDeposits.map(_toMockDeposit));
+      _portfolioDeposits
+        ..clear()
+        ..addAll(apiDeposits);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -127,8 +133,21 @@ class AppSession extends ChangeNotifier {
       idempotencyKey: idempotencyKey,
     );
     _deposits.add(_toMockDeposit(deposit));
+    _portfolioDeposits.add(deposit);
     notifyListeners();
     return deposit;
+  }
+
+  Future<WithdrawalQuote> requestWithdrawalQuote(String depositId) =>
+      _depositRepository.withdrawalQuote(depositId);
+
+  Future<void> withdrawDeposit({
+    required String depositId,
+    required String quoteId,
+  }) async {
+    await _depositRepository.withdraw(depositId, quoteId);
+    _portfolioDeposits.removeWhere((deposit) => deposit.id == depositId);
+    notifyListeners();
   }
 
   Future<List<AutoSaveRule>> createAutoSaveRule({

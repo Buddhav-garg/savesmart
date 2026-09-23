@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/error_mapper.dart';
 import '../domain/deposit.dart';
+import '../domain/withdrawal_quote.dart';
 
 class DepositRepository {
   DepositRepository(this.client);
@@ -65,12 +66,12 @@ class DepositRepository {
     }
   }
 
-  Future<Map<String, dynamic>> withdrawalQuote(String depositId) async {
+  Future<WithdrawalQuote> withdrawalQuote(String depositId) async {
     try {
       final response = await client.dio.post(
         '/deposits/$depositId/withdrawal-quote',
       );
-      return Map<String, dynamic>.from(response.data as Map);
+      return WithdrawalQuote.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (error) {
       throw mapDioError(error);
     }

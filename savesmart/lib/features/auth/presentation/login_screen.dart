@@ -58,13 +58,13 @@ class _LoginScreenState extends State<LoginScreen> {
               const Icon(
                 Icons.savings_outlined,
                 size: 38,
-                color: Color(0xFF277A57),
+                  color: Color.fromARGB(255, 201, 139, 5),
               ),
               const Spacer(),
               const SizedBox(height: 12),
               const Text(
-                'Save Smart',
-                style: TextStyle(fontSize: 30, color: Color(0xFF17221D)),
+                'SaveSmart',
+                style: TextStyle(fontSize: 30, color: Color.fromARGB(255, 201, 139, 5), fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 36),
               TextField(
