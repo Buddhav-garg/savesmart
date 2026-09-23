@@ -40,4 +40,21 @@ class GoalRepository {
       throw mapDioError(error);
     }
   }
+
+  Future<Goal> contribute({
+    required String goalId,
+    required int amountPaise,
+    required String idempotencyKey,
+  }) async {
+    try {
+      final response = await client.dio.post(
+        '/goals/$goalId/contributions',
+        data: {'amountPaise': amountPaise},
+        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
+      );
+      return Goal.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (error) {
+      throw mapDioError(error);
+    }
+  }
 }

@@ -72,6 +72,27 @@ class AppSession extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<MockGoal> contributeToGoal({
+    required String goalId,
+    required int amountPaise,
+    required String idempotencyKey,
+  }) async {
+    final goal = await _goalRepository.contribute(
+      goalId: goalId,
+      amountPaise: amountPaise,
+      idempotencyKey: idempotencyKey,
+    );
+    final updated = _toMockGoal(goal);
+    final index = _goals.indexWhere((item) => item.id == goalId);
+    if (index == -1) {
+      _goals.add(updated);
+    } else {
+      _goals[index] = updated;
+    }
+    notifyListeners();
+    return updated;
+  }
+
   void addGoal(MockGoal goal) {
     _goals.add(goal);
     notifyListeners();
