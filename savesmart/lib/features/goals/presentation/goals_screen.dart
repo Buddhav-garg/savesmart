@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
+import '../../auth/state/session_provider.dart';
+import '../data/goal_math.dart';
+import '../widgets/goal_progress_ring.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -13,6 +16,21 @@ class GoalsScreen extends StatefulWidget {
 
 class _GoalsScreenState extends State<GoalsScreen> {
   int selectedTab = 0;
+  final session = AppSession.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    session.addListener(_onSessionChanged);
+  }
+
+  @override
+  void dispose() {
+    session.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+
+  void _onSessionChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +71,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
   }
 
   Widget _goals(BuildContext context) {
-    final totalSaved = mockGoals.fold<int>(0, (sum, goal) => sum + goal.saved);
+    final totalSaved = session.goals.fold<int>(
+      0,
+      (sum, goal) => sum + goal.saved,
+    );
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
@@ -61,23 +82,18 @@ class _GoalsScreenState extends State<GoalsScreen> {
           'Good morning, Aisha',
           style: TextStyle(color: Color(0xFF5D6962)),
         ),
-        const SizedBox(height: 6),
-        Text(
-          'Your money has\na direction.',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
         const SizedBox(height: 22),
         Card(
-          color: const Color(0xFF17221D),
+          color: Theme.of(context).colorScheme.primaryContainer,
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'TOTAL SAVED',
                   style: TextStyle(
-                    color: Color(0xFFB9E8D0),
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
@@ -86,20 +102,26 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 const SizedBox(height: 8),
                 Text(
                   formatRupees(totalSaved),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.trending_up, color: Color(0xFFB9E8D0), size: 18),
+                    Icon(
+                      Icons.trending_up,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 18,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       '+12.4% this month',
-                      style: TextStyle(color: Colors.white70),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                     ),
                   ],
                 ),
@@ -116,7 +138,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ],
         ),
         const SizedBox(height: 10),
-        ...mockGoals.map(
+        ...session.goals.map(
           (goal) => _GoalTile(
             goal: goal,
             onTap: () => context.go('/home/goal/${goal.id}'),
@@ -124,7 +146,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         ),
         const SizedBox(height: 18),
         OutlinedButton.icon(
-          onPressed: () {},
+          onPressed: () => context.go('/home/new-goal'),
           icon: const Icon(Icons.add),
           label: const Text('Create a new goal'),
         ),
@@ -180,6 +202,13 @@ class _GoalTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
+            Icon(
+              _goalIcon(goal.iconKey),
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            GoalProgressRing(progress: goal.progress, size: 58),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +233,13 @@ class _GoalTile extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              '${(goal.progress * 100).round()}%',
+              formatRupees(
+                requiredMonthlySavingPaise(
+                  targetPaise: goal.target,
+                  savedPaise: goal.saved,
+                  targetDate: goal.targetDate,
+                ),
+              ),
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ],
@@ -212,6 +247,20 @@ class _GoalTile extends StatelessWidget {
       ),
     ),
   );
+}
+
+IconData _goalIcon(String key) {
+  switch (key) {
+    case 'home':
+      return Icons.home_outlined;
+    case 'safety':
+      return Icons.shield_outlined;
+    case 'education':
+      return Icons.school_outlined;
+    case 'travel':
+    default:
+      return Icons.flight_outlined;
+  }
 }
 
 class _ActionTile extends StatelessWidget {

@@ -1,17 +1,40 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
+import '../../auth/state/session_provider.dart';
+import '../data/goal_math.dart';
+import '../widgets/goal_progress_ring.dart';
 
-class GoalDetailScreen extends StatelessWidget {
+class GoalDetailScreen extends StatefulWidget {
   const GoalDetailScreen({required this.goalId, super.key});
   final String goalId;
 
   @override
+  State<GoalDetailScreen> createState() => _GoalDetailScreenState();
+}
+
+class _GoalDetailScreenState extends State<GoalDetailScreen> {
+  final session = AppSession.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    session.addListener(_onSessionChanged);
+  }
+
+  @override
+  void dispose() {
+    session.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+
+  void _onSessionChanged() => setState(() {});
+
+  @override
   Widget build(BuildContext context) {
-    final goal = mockGoals.firstWhere(
-      (item) => item.id == goalId,
-      orElse: () => mockGoals.first,
+    final goal = session.goals.firstWhere(
+      (item) => item.id == widget.goalId,
+      orElse: () => session.goals.first,
     );
     return Scaffold(
       appBar: AppBar(title: Text(goal.name)),
@@ -19,15 +42,14 @@ class GoalDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Card(
-            color: Color(goal.color),
+            color: Theme.of(context).colorScheme.primaryContainer,
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  Text(
-                    '${(goal.progress * 100).round()}%',
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
+                  Icon(_goalIcon(goal.iconKey), size: 32),
+                  const SizedBox(height: 12),
+                  GoalProgressRing(progress: goal.progress, size: 110),
                   const Text('of your goal completed'),
                   const SizedBox(height: 20),
                   LinearProgressIndicator(
@@ -73,9 +95,33 @@ class GoalDetailScreen extends StatelessWidget {
             label: 'Still needed',
             value: formatRupees(goal.target - goal.saved),
           ),
+          _InfoRow(
+            label: 'Required monthly saving',
+            value: formatRupees(
+              requiredMonthlySavingPaise(
+                targetPaise: goal.target,
+                savedPaise: goal.saved,
+                targetDate: goal.targetDate,
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+IconData _goalIcon(String key) {
+  switch (key) {
+    case 'home':
+      return Icons.home_outlined;
+    case 'safety':
+      return Icons.shield_outlined;
+    case 'education':
+      return Icons.school_outlined;
+    case 'travel':
+    default:
+      return Icons.flight_outlined;
   }
 }
 

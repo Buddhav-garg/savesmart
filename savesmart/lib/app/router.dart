@@ -4,6 +4,7 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/deposits/presentation/deposits_screen.dart';
 import '../features/goals/presentation/goal_detail_screen.dart';
 import '../features/goals/presentation/goals_screen.dart';
+import '../features/goals/presentation/new_goal_screen.dart';
 import '../features/deposits/presentation/fd_calculator_screen.dart';
 import '../features/deposits/presentation/rd_screen.dart';
 
@@ -15,6 +16,10 @@ final appRouter = GoRouter(
       path: '/home',
       builder: (context, state) => const GoalsScreen(),
       routes: [
+        GoRoute(
+          path: 'new-goal',
+          builder: (context, state) => const NewGoalScreen(),
+        ),
         GoRoute(
           path: 'goal/:id',
           builder: (context, state) =>
