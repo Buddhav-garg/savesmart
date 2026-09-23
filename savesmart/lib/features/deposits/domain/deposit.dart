@@ -26,16 +26,20 @@ class Deposit {
   final int daysToMaturity;
 
   factory Deposit.fromJson(Map<String, dynamic> json) => Deposit(
-    id: json['id'] as String,
-    kind: json['kind'] as String,
+    id: json['id']?.toString() ?? '',
+    kind: json['kind']?.toString() ?? 'FD',
     principalPaise: (json['principalPaise'] as num).toInt(),
     installmentPaise: (json['installmentPaise'] as num?)?.toInt(),
     debitDate: (json['debitDate'] as num?)?.toInt(),
     ratePct: (json['ratePct'] as num).toDouble(),
-    startDate: DateTime.parse(json['startDate'] as String),
-    maturityDate: DateTime.parse(json['maturityDate'] as String),
+    startDate:
+        DateTime.tryParse(json['startDate']?.toString() ?? '') ??
+        DateTime.now(),
+    maturityDate:
+        DateTime.tryParse(json['maturityDate']?.toString() ?? '') ??
+        DateTime.now(),
     maturityPaise: (json['maturityPaise'] as num).toInt(),
-    status: json['status'] as String,
+    status: json['status']?.toString() ?? 'active',
     daysToMaturity: (json['daysToMaturity'] as num).toInt(),
   );
 }

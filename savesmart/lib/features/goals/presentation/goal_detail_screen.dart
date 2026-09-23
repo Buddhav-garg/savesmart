@@ -18,7 +18,6 @@ class GoalDetailScreen extends StatefulWidget {
 
 class _GoalDetailScreenState extends State<GoalDetailScreen> {
   final session = AppSession.instance;
-  final amountController = TextEditingController();
   String? contributionKey;
   String? errorMessage;
   int? reachedMilestone;
@@ -33,7 +32,6 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   @override
   void dispose() {
     session.removeListener(_onSessionChanged);
-    amountController.dispose();
     super.dispose();
   }
 
@@ -43,61 +41,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
     final amount = await showModalBottomSheet<int>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) {
-        final controller = TextEditingController();
-        String? validationMessage;
-        return StatefulBuilder(
-          builder: (context, setSheetState) => Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(context).viewInsets.bottom + 20,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Add money to ${goal.name}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Amount',
-                    prefixText: '₹ ',
-                    errorText: validationMessage,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: FilledButton(
-                    onPressed: () {
-                      final paise = parseRupeesToPaise(controller.text);
-                      if (paise == null || paise <= 0) {
-                        setSheetState(
-                          () => validationMessage = 'Enter a valid amount.',
-                        );
-                        return;
-                      }
-                      Navigator.of(sheetContext).pop(paise);
-                    },
-                    child: const Text('Confirm transfer'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      showDragHandle: true,
+      builder: (_) => _AddMoneySheet(goal: goal),
     );
     if (amount == null || !mounted) return;
 
@@ -252,6 +197,102 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AddMoneySheet extends StatefulWidget {
+  const _AddMoneySheet({required this.goal});
+
+  final MockGoal goal;
+
+  @override
+  State<_AddMoneySheet> createState() => _AddMoneySheetState();
+}
+
+class _AddMoneySheetState extends State<_AddMoneySheet> {
+  final controller = TextEditingController();
+  String? errorMessage;
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  void submit() {
+    final paise = parseRupeesToPaise(controller.text);
+    if (paise == null || paise <= 0) {
+      setState(() => errorMessage = 'Enter a valid amount.');
+      return;
+    }
+    Navigator.of(context).pop(paise);
+  }
+
+  void selectAmount(int paise) {
+    controller.text = (paise ~/ 100).toString();
+    controller.selection = TextSelection.collapsed(
+      offset: controller.text.length,
+    );
+    setState(() => errorMessage = null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (widget.goal.progress * 100).round();
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Add money', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 4),
+            Text('Add to ${widget.goal.name} · $progress% complete'),
+            const SizedBox(height: 18),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Transfer amount',
+                prefixText: '₹ ',
+                errorText: errorMessage,
+              ),
+              onSubmitted: (_) => submit(),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final amount in [50000, 100000, 250000])
+                  ActionChip(
+                    label: Text(formatRupees(amount)),
+                    onPressed: () => selectAmount(amount),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton.icon(
+                onPressed: submit,
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Review transfer'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

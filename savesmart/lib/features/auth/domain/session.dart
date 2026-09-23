@@ -5,7 +5,7 @@ class UserSession {
   final UserProfile user;
 
   factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
-    token: json['token'] as String,
+    token: json['token']?.toString() ?? '',
     user: UserProfile.fromJson(json['user'] as Map<String, dynamic>),
   );
 }
@@ -22,8 +22,8 @@ class UserProfile {
   final String phone;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    phone: json['phone'] as String,
+    id: json['id']?.toString() ?? '',
+    name: json['name']?.toString() ?? 'User',
+    phone: json['phone']?.toString() ?? '',
   );
 }
