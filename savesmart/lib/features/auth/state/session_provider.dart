@@ -7,6 +7,8 @@ import '../domain/session.dart';
 import '../../deposits/data/deposit_repository.dart';
 import '../../deposits/domain/deposit.dart';
 import '../../goals/data/goal_repository.dart';
+import '../../goals/data/auto_save_repository.dart';
+import '../../goals/domain/auto_save_rule.dart';
 
 class AppSession extends ChangeNotifier {
   AppSession._()
@@ -16,21 +18,26 @@ class AppSession extends ChangeNotifier {
     _authRepository = AuthRepository(_client);
     _goalRepository = GoalRepository(_client);
     _depositRepository = DepositRepository(_client);
+    _autoSaveRepository = AutoSaveRepository(_client);
   }
 
   static final AppSession instance = AppSession._();
 
   final List<MockGoal> _goals;
   final List<MockDeposit> _deposits;
+  final Map<String, List<AutoSaveRule>> _rulesByGoal = {};
   final ApiClient _client;
   late final AuthRepository _authRepository;
   late final GoalRepository _goalRepository;
   late final DepositRepository _depositRepository;
+  late final AutoSaveRepository _autoSaveRepository;
   UserSession? _userSession;
   bool _isLoading = false;
 
   List<MockGoal> get goals => List.unmodifiable(_goals);
   List<MockDeposit> get deposits => List.unmodifiable(_deposits);
+  List<AutoSaveRule> rulesForGoal(String goalId) =>
+      List.unmodifiable(_rulesByGoal[goalId] ?? const []);
   UserProfile? get user => _userSession?.user;
   bool get isAuthenticated => _userSession != null;
   bool get isLoading => _isLoading;
@@ -89,6 +96,42 @@ class AppSession extends ChangeNotifier {
     } else {
       _goals[index] = updated;
     }
+    notifyListeners();
+    return updated;
+  }
+
+  Future<List<AutoSaveRule>> createAutoSaveRule({
+    required String goalId,
+    required String type,
+    int? amountPaise,
+    double? percent,
+    String? schedule,
+  }) async {
+    final rules = await _autoSaveRepository.createRule(
+      goalId: goalId,
+      type: type,
+      amountPaise: amountPaise,
+      percent: percent,
+      schedule: schedule,
+    );
+    _rulesByGoal[goalId] = rules;
+    notifyListeners();
+    return rules;
+  }
+
+  Future<AutoSaveRule> toggleAutoSaveRule({
+    required String goalId,
+    required AutoSaveRule rule,
+  }) async {
+    final updated = await _autoSaveRepository.setPaused(
+      goalId: goalId,
+      ruleId: rule.id,
+      paused: !rule.paused,
+    );
+    final rules = [...rulesForGoal(goalId)];
+    final index = rules.indexWhere((item) => item.id == rule.id);
+    if (index >= 0) rules[index] = updated;
+    _rulesByGoal[goalId] = rules;
     notifyListeners();
     return updated;
   }
