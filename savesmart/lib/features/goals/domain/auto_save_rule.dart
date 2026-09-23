@@ -20,15 +20,15 @@ class AutoSaveRule {
   final DateTime? pausedSince;
 
   factory AutoSaveRule.fromJson(Map<String, dynamic> json) => AutoSaveRule(
-    id: json['id'] as String,
-    goalId: json['goalId'] as String,
-    type: json['type'] as String,
+    id: json['id']?.toString() ?? '',
+    goalId: json['goalId']?.toString() ?? '',
+    type: json['type']?.toString() ?? 'round_up',
     amountPaise: (json['amountPaise'] as num?)?.toInt(),
     percent: (json['percent'] as num?)?.toDouble(),
     schedule: json['schedule'] as String?,
     paused: json['paused'] as bool? ?? false,
     pausedSince: json['pausedSince'] == null
         ? null
-        : DateTime.parse(json['pausedSince'] as String),
+        : DateTime.tryParse(json['pausedSince']?.toString() ?? ''),
   );
 }

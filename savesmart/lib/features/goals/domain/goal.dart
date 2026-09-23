@@ -22,13 +22,15 @@ class Goal {
   final int requiredMonthlyPaise;
 
   factory Goal.fromJson(Map<String, dynamic> json) => Goal(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    icon: json['icon'] as String? ?? 'savings',
+    id: json['id']?.toString() ?? '',
+    name: json['name']?.toString() ?? 'Savings goal',
+    icon: json['icon']?.toString() ?? 'savings',
     targetPaise: (json['targetPaise'] as num).toInt(),
     savedPaise: (json['savedPaise'] as num).toInt(),
-    targetDate: DateTime.parse(json['targetDate'] as String),
-    status: json['status'] as String,
+    targetDate:
+        DateTime.tryParse(json['targetDate']?.toString() ?? '') ??
+        DateTime.now(),
+    status: json['status']?.toString() ?? 'active',
     progressPct: (json['progressPct'] as num).toDouble(),
     requiredMonthlyPaise: (json['requiredMonthlyPaise'] as num).toInt(),
   );
