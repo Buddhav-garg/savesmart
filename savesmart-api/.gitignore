@@ -1,0 +1,5 @@
+node_modules/
+savesmart.db
+savesmart.db-shm
+savesmart.db-wal
+.env
