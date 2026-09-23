@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
 import '../../auth/state/session_provider.dart';
 import '../data/goal_math.dart';
 import '../widgets/goal_progress_ring.dart';
+import '../widgets/milestone_celebration.dart';
 
 class GoalDetailScreen extends StatefulWidget {
   const GoalDetailScreen({required this.goalId, super.key});
@@ -15,6 +17,11 @@ class GoalDetailScreen extends StatefulWidget {
 
 class _GoalDetailScreenState extends State<GoalDetailScreen> {
   final session = AppSession.instance;
+  final amountController = TextEditingController();
+  String? contributionKey;
+  String? errorMessage;
+  int? reachedMilestone;
+  bool isContributing = false;
 
   @override
   void initState() {
@@ -25,10 +32,125 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   @override
   void dispose() {
     session.removeListener(_onSessionChanged);
+    amountController.dispose();
     super.dispose();
   }
 
   void _onSessionChanged() => setState(() {});
+
+  Future<void> _addMoney(MockGoal goal) async {
+    final amount = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final controller = TextEditingController();
+        String? validationMessage;
+        return StatefulBuilder(
+          builder: (context, setSheetState) => Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Add money to ${goal.name}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Amount',
+                    prefixText: '₹ ',
+                    errorText: validationMessage,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: FilledButton(
+                    onPressed: () {
+                      final paise = parseRupeesToPaise(controller.text);
+                      if (paise == null || paise <= 0) {
+                        setSheetState(
+                          () => validationMessage = 'Enter a valid amount.',
+                        );
+                        return;
+                      }
+                      Navigator.of(sheetContext).pop(paise);
+                    },
+                    child: const Text('Confirm transfer'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (amount == null || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Review transfer'),
+        content: Text(
+          'Transfer ${formatRupees(amount)} from your savings account to ${goal.name}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Transfer money'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    contributionKey ??= '${DateTime.now().microsecondsSinceEpoch}-${goal.id}';
+    final previousProgress = goal.progress;
+    setState(() {
+      errorMessage = null;
+      isContributing = true;
+    });
+    try {
+      final updated = await session.contributeToGoal(
+        goalId: goal.id,
+        amountPaise: amount,
+        idempotencyKey: contributionKey!,
+      );
+      final newProgress = updated.progress;
+      const milestones = [25, 50, 75, 100];
+      final milestone = milestones
+          .where(
+            (value) =>
+                previousProgress * 100 < value && newProgress * 100 >= value,
+          )
+          .fold<int?>(null, (highest, value) => value);
+      setState(() {
+        reachedMilestone = milestone;
+        contributionKey = null;
+      });
+    } catch (error) {
+      setState(() => errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => isContributing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +163,29 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: reachedMilestone == null
+                ? const SizedBox(key: ValueKey('no-milestone'))
+                : MilestoneCelebration(
+                    key: ValueKey(reachedMilestone),
+                    milestone: reachedMilestone!,
+                  ),
+          ),
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: errorMessage == null
+                ? const SizedBox(key: ValueKey('no-error'))
+                : Text(
+                    errorMessage!,
+                    key: ValueKey(errorMessage),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+          ),
+          const SizedBox(height: 12),
           Card(
             color: Theme.of(context).colorScheme.primaryContainer,
             child: Padding(
@@ -75,9 +220,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           SizedBox(
             height: 54,
             child: FilledButton.icon(
-              onPressed: () {},
+              onPressed: isContributing ? null : () => _addMoney(goal),
               icon: const Icon(Icons.add),
-              label: const Text('Add money'),
+              label: Text(isContributing ? 'Transferring...' : 'Add money'),
             ),
           ),
           const SizedBox(height: 12),
