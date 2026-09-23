@@ -26,16 +26,16 @@ class _FdCalculatorScreenState extends State<FdCalculatorScreen> {
           const Text('A simple estimate for your fixed deposit.'),
           const SizedBox(height: 30),
           Card(
-            color: const Color(0xFF17221D),
+            color: Theme.of(context).colorScheme.primaryContainer,
             child: Padding(
               padding: const EdgeInsets.all(22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'ESTIMATED MATURITY',
                     style: TextStyle(
-                      color: Color(0xFFB9E8D0),
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1,
@@ -44,16 +44,18 @@ class _FdCalculatorScreenState extends State<FdCalculatorScreen> {
                   const SizedBox(height: 10),
                   Text(
                     formatRupees(maturityPaise),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                       fontSize: 32,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     '7.25% p.a. · 12 months',
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
                 ],
               ),

@@ -2,8 +2,26 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/money.dart';
 
-class RdScreen extends StatelessWidget {
+class RdScreen extends StatefulWidget {
   const RdScreen({super.key});
+
+  @override
+  State<RdScreen> createState() => _RdScreenState();
+}
+
+class _RdScreenState extends State<RdScreen> {
+  final installmentController = TextEditingController(text: '5000');
+  final tenureController = TextEditingController(text: '24');
+  final debitDateController = TextEditingController();
+
+  @override
+  void dispose() {
+    installmentController.dispose();
+    tenureController.dispose();
+    debitDateController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Start an RD')),
@@ -17,21 +35,24 @@ class RdScreen extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('Small, regular deposits can make a meaningful difference.'),
         const SizedBox(height: 28),
-        const TextField(
+        TextField(
+          controller: installmentController,
           decoration: InputDecoration(
             labelText: 'Monthly instalment',
             prefixText: '₹  ',
           ),
         ),
         const SizedBox(height: 14),
-        const TextField(
+        TextField(
+          controller: tenureController,
           decoration: InputDecoration(
             labelText: 'Tenure',
             suffixText: 'months',
           ),
         ),
         const SizedBox(height: 14),
-        const TextField(
+        TextField(
+          controller: debitDateController,
           decoration: InputDecoration(
             labelText: 'Debit date',
             hintText: 'Choose a date between 1 and 28',
@@ -39,7 +60,7 @@ class RdScreen extends StatelessWidget {
         ),
         const SizedBox(height: 28),
         Card(
-          color: const Color(0xFFFFD7A8),
+          color: Theme.of(context).colorScheme.primaryContainer,
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
