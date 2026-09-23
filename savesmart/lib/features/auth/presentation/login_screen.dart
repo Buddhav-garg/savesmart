@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../state/session_provider.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -10,6 +12,39 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool obscurePin = true;
+  final phoneController = TextEditingController();
+  final pinController = TextEditingController();
+  String? errorMessage;
+  bool isSubmitting = false;
+
+  @override
+  void dispose() {
+    phoneController.dispose();
+    pinController.dispose();
+    super.dispose();
+  }
+
+  Future<void> login() async {
+    final phone = phoneController.text.trim();
+    final pin = pinController.text.trim();
+    if (phone.isEmpty || pin.isEmpty) {
+      setState(() => errorMessage = 'Enter your phone number and PIN.');
+      return;
+    }
+
+    setState(() {
+      errorMessage = null;
+      isSubmitting = true;
+    });
+    try {
+      await AppSession.instance.login(phone: phone, pin: pin);
+      if (mounted) context.go('/home');
+    } catch (error) {
+      if (mounted) setState(() => errorMessage = error.toString());
+    } finally {
+      if (mounted) setState(() => isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 36),
               TextField(
+                controller: phoneController,
                 decoration: InputDecoration(
                   labelText: 'Phone number',
                   prefixText: '+91  ',
@@ -40,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 14),
               TextField(
+                controller: pinController,
                 decoration: InputDecoration(
                   labelText: '4-digit PIN',
                   suffixIcon: IconButton(
@@ -54,19 +91,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: obscurePin,
               ),
               const SizedBox(height: 20),
+              if (errorMessage != null) ...[
+                Text(
+                  errorMessage!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                const SizedBox(height: 12),
+              ],
               SizedBox(
                 width: double.infinity,
                 height: 54,
                 child: FilledButton(
-                  onPressed: () => context.go('/home'),
-                  child: const Text('Continue'),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Center(
-                child: Text(
-                  'Demo mode · any details will work',
-                  style: TextStyle(color: Color(0xFF7C877F)),
+                  onPressed: isSubmitting ? null : login,
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Sign in'),
                 ),
               ),
               const Spacer(),

@@ -78,9 +78,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
-        const Text(
-          'Good morning, Aisha',
-          style: TextStyle(color: Color(0xFF5D6962)),
+        Text(
+          'Good morning, ${session.user?.name ?? 'Aisha'}',
+          style: const TextStyle(color: Color(0xFF5D6962)),
         ),
         const SizedBox(height: 22),
         Card(
