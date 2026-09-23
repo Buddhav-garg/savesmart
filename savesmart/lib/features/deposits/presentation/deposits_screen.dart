@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
+import '../../auth/state/session_provider.dart';
 
 class DepositsScreen extends StatefulWidget {
   const DepositsScreen({super.key});
@@ -12,6 +13,21 @@ class DepositsScreen extends StatefulWidget {
 
 class _DepositsScreenState extends State<DepositsScreen> {
   String selectedKind = 'ALL';
+  final session = AppSession.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    session.addListener(_onSessionChanged);
+  }
+
+  @override
+  void dispose() {
+    session.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+
+  void _onSessionChanged() => setState(() {});
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -43,7 +59,7 @@ class _DepositsScreenState extends State<DepositsScreen> {
               .toList(),
         ),
         const SizedBox(height: 16),
-        ...mockDeposits
+        ...(session.deposits.isEmpty ? mockDeposits : session.deposits)
             .where(
               (deposit) =>
                   selectedKind == 'ALL' || deposit.kind == selectedKind,

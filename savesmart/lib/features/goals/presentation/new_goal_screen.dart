@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
 import '../../auth/state/session_provider.dart';
 
@@ -37,25 +36,20 @@ class _NewGoalScreenState extends State<NewGoalScreen> {
     if (selected != null) setState(() => targetDate = selected);
   }
 
-  void submit() {
+  Future<void> submit() async {
     setState(() => submitted = true);
     if (!formKey.currentState!.validate() || targetDate == null) {
       return;
     }
 
     final targetPaise = parseRupeesToPaise(amountController.text)!;
-    AppSession.instance.addGoal(
-      MockGoal(
-        id: 'goal-${DateTime.now().millisecondsSinceEpoch}',
-        name: nameController.text.trim(),
-        iconKey: iconKey,
-        saved: 0,
-        target: targetPaise,
-        due: '${targetDate!.day}/${targetDate!.month}/${targetDate!.year}',
-        targetDate: targetDate!,
-      ),
+    await AppSession.instance.createGoal(
+      name: nameController.text.trim(),
+      icon: iconKey,
+      targetPaise: targetPaise,
+      targetDate: targetDate!,
     );
-    context.go('/home');
+    if (mounted) context.go('/home');
   }
 
   @override
