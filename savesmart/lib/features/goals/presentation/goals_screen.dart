@@ -170,7 +170,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
               child: _ActionTile(
                 icon: Icons.calendar_month_outlined,
                 title: 'Start an RD',
-                onTap: () => context.go('/rd'),
+                onTap: () => context.go('/book-rd'),
               ),
             ),
           ],

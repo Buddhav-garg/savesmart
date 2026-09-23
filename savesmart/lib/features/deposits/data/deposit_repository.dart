@@ -31,9 +31,17 @@ class DepositRepository {
     String? nomineeName,
     String? nomineeRelation,
     int? nomineeSharePct,
+    String payout = 'on_maturity',
+    String renewal = 'none',
+    required String idempotencyKey,
   }) async {
     try {
-      final data = <String, dynamic>{'kind': kind, 'tenureDays': tenureDays};
+      final data = <String, dynamic>{
+        'kind': kind,
+        'tenureDays': tenureDays,
+        'payout': payout,
+        'renewal': renewal,
+      };
       if (principalPaise != null) data['principalPaise'] = principalPaise;
       if (installmentPaise != null) {
         data['installmentPaise'] = installmentPaise;
@@ -49,7 +57,7 @@ class DepositRepository {
       final response = await client.dio.post(
         '/deposits',
         data: data,
-        options: Options(headers: {'Idempotency-Key': _key()}),
+        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
       );
       return Deposit.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (error) {
@@ -82,7 +90,4 @@ class DepositRepository {
       throw mapDioError(error);
     }
   }
-
-  String _key() => '${DateTime.now().microsecondsSinceEpoch}-${_keyCounter++}';
-  static int _keyCounter = 0;
 }
