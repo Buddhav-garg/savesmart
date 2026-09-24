@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../../auth/state/session_provider.dart';
 import '../domain/nominee.dart';
 
@@ -36,7 +37,7 @@ class _NomineeScreenState extends State<NomineeScreen> {
       }
       if (_rows.isEmpty) _rows.add(_NomineeRow());
     } catch (error) {
-      _error = error.toString();
+      if (mounted) await presentBankError(context, error);
       if (_rows.isEmpty) _rows.add(_NomineeRow());
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -92,7 +93,7 @@ class _NomineeScreenState extends State<NomineeScreen> {
             .showSnackBar(const SnackBar(content: Text('Nominees saved.')));
       }
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

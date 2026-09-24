@@ -76,6 +76,17 @@ class AppSession extends ChangeNotifier {
     }
   }
 
+  void logout() {
+    _userSession = null;
+    _client.setToken(null);
+    _goals.clear();
+    _deposits.clear();
+    _portfolioDeposits.clear();
+    _nominees = [];
+    _rulesByGoal.clear();
+    notifyListeners();
+  }
+
   Future<void> createGoal({
     required String name,
     required String icon,

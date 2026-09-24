@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../../../core/utils/mock_data.dart';
 import '../../../core/utils/money.dart';
 import '../../auth/state/session_provider.dart';
@@ -92,7 +93,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         contributionKey = null;
       });
     } catch (error) {
-      setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => isContributing = false);
     }

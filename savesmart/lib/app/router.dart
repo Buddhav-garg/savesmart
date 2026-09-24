@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/profile_screen.dart';
+import '../features/auth/state/session_provider.dart';
 import '../features/deposits/presentation/deposits_screen.dart';
 import '../features/goals/presentation/goal_detail_screen.dart';
 import '../features/goals/presentation/goals_screen.dart';
@@ -11,10 +13,37 @@ import '../features/deposits/presentation/rd_screen.dart';
 import '../features/deposits/presentation/deposit_booking_screen.dart';
 import '../features/deposits/presentation/nominee_screen.dart';
 
+String? _lastMatchedLocation;
+
 final appRouter = GoRouter(
   initialLocation: '/login',
+  refreshListenable: AppSession.instance,
+  redirect: (context, state) {
+    final session = AppSession.instance;
+    final isLogin = state.matchedLocation == '/login';
+
+    if (isLogin) {
+      // A signed-in user navigating back to login has left the protected area.
+      // Keep the initial login page intact while login() is still completing.
+      if (session.isAuthenticated && _lastMatchedLocation != '/login') {
+        session.logout();
+      }
+      _lastMatchedLocation = '/login';
+      return null;
+    }
+    if (!session.isAuthenticated) {
+      _lastMatchedLocation = '/login';
+      return '/login';
+    }
+    _lastMatchedLocation = state.matchedLocation;
+    return null;
+  },
   routes: [
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
     GoRoute(
       path: '/home',
       builder: (context, state) => const GoalsScreen(),

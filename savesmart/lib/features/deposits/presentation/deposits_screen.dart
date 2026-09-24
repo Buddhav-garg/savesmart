@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../../../core/security/biometric_service.dart';
 import '../../../core/utils/money.dart';
 import '../../auth/state/session_provider.dart';
@@ -63,7 +64,7 @@ class _DepositsScreenState extends State<DepositsScreen> {
       if (mounted) setState(() => quote = result);
       if (mounted) await _showQuote(deposit, result);
     } catch (error) {
-      if (mounted) setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => loadingDepositId = null);
     }
@@ -110,7 +111,7 @@ class _DepositsScreenState extends State<DepositsScreen> {
         });
       }
     } catch (error) {
-      if (mounted) setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => loadingDepositId = null);
     }

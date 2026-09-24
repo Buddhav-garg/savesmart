@@ -34,43 +34,54 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'SaveSmart',
-          style: TextStyle(fontWeight: FontWeight.w800),
+    final router = GoRouter.of(context);
+    return PopScope<void>(
+      canPop: router.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !router.canPop()) {
+          session.logout();
+          context.go('/login');
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'SaveSmart',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () => context.push('/profile'),
+              icon: const Icon(Icons.account_circle_outlined),
+              tooltip: 'Profile',
+            ),
+            IconButton(
+              onPressed: () => context.push('/nominees'),
+              icon: const Icon(Icons.people_alt_outlined),
+              tooltip: 'Nominee management',
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () => context.push('/nominees'),
-            icon: const Icon(Icons.people_alt_outlined),
-            tooltip: 'Nominee management',
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_rounded),
-          ),
-        ],
-      ),
-      body: IndexedStack(
-        index: selectedTab,
-        children: [_goals(context), _snapshot(context)],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedTab,
-        onDestinationSelected: (index) => setState(() => selectedTab = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.track_changes_outlined),
-            selectedIcon: Icon(Icons.track_changes),
-            label: 'Goals',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.pie_chart_outline),
-            selectedIcon: Icon(Icons.pie_chart),
-            label: 'Snapshot',
-          ),
-        ],
+        body: IndexedStack(
+          index: selectedTab,
+          children: [_goals(context), _snapshot(context)],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: selectedTab,
+          onDestinationSelected: (index) => setState(() => selectedTab = index),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.track_changes_outlined),
+              selectedIcon: Icon(Icons.track_changes),
+              label: 'Goals',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.pie_chart_outline),
+              selectedIcon: Icon(Icons.pie_chart),
+              label: 'Snapshot',
+            ),
+          ],
+        ),
       ),
     );
   }

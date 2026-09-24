@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../state/session_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await AppSession.instance.login(phone: phone, pin: pin);
       if (mounted) context.go('/home');
     } catch (error) {
-      if (mounted) setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => isSubmitting = false);
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../../../core/utils/money.dart';
 import '../../auth/state/session_provider.dart';
 import '../domain/auto_save_rule.dart';
@@ -52,7 +53,7 @@ class _AutoSaveScreenState extends State<AutoSaveScreen> {
         schedule: request.schedule,
       );
     } catch (error) {
-      setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => addingRule = false);
     }
@@ -66,7 +67,7 @@ class _AutoSaveScreenState extends State<AutoSaveScreen> {
     try {
       await session.toggleAutoSaveRule(goalId: widget.goalId, rule: rule);
     } catch (error) {
-      setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => busyRuleId = null);
     }

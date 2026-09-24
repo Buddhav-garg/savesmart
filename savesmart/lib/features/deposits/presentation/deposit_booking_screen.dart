@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../../../core/utils/money.dart';
 import '../../auth/state/session_provider.dart';
 
@@ -139,7 +140,7 @@ class _DepositBookingScreenState extends State<DepositBookingScreen> {
       bookingKey = null;
       if (mounted) context.go('/deposits');
     } catch (error) {
-      if (mounted) setState(() => errorMessage = error.toString());
+      if (mounted) await presentBankError(context, error);
     } finally {
       if (mounted) setState(() => submitting = false);
     }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/errors/error_presenter.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/money.dart';
 import '../data/deposit_math.dart';
@@ -63,6 +64,7 @@ class _FdCalculatorScreenState extends State<FdCalculatorScreen> {
     } catch (error) {
       if (mounted && requestedDays == tenureDays) {
         setState(() => errorMessage = error.toString());
+        await presentBankError(context, error);
       }
     } finally {
       if (mounted && requestedDays == tenureDays) {
