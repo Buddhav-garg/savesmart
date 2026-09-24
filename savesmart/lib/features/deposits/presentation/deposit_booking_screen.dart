@@ -78,6 +78,10 @@ class _DepositBookingScreenState extends State<DepositBookingScreen> {
       setState(() => errorMessage = 'Enter a valid amount.');
       return;
     }
+    if (widget.isFd && amount < 100000) {
+      setState(() => errorMessage = 'Minimum FD amount is ₹1,000.');
+      return;
+    }
     if (!widget.isFd &&
         (debitDate == null || debitDate < 1 || debitDate > 28)) {
       setState(() => errorMessage = 'RD debit date must be between 1 and 28.');
